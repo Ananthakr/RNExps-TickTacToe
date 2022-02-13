@@ -83,8 +83,8 @@ const App = () => {
 
   const hasGameTied: (state: GameState) => Boolean = state => {
     if (
-      state[0].join('').length === 3 ||
-      state[1].join('').length === 3 ||
+      state[0].join('').length === 3 &&
+      state[1].join('').length === 3 &&
       state[2].join('').length === 3
     ) {
       return true;
