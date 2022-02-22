@@ -54,8 +54,8 @@ const App = () => {
         state[0][2] === symbol) ||
       (state[1][0] === symbol &&
         state[1][1] === symbol &&
-        state[2][2] === symbol) ||
-      (state[0][0] === symbol &&
+        state[1][2] === symbol) ||
+      (state[2][0] === symbol &&
         state[2][1] === symbol &&
         state[2][2] === symbol) ||
       // column X
