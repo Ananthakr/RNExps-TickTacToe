@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useEffect, useState} from 'react';
 import {
   Dimensions,
@@ -28,6 +29,33 @@ type GameState = Array<Array<String>>;
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
 
+  const [prevGames, setPrevGames] = useState(['', '', '', '', '']);
+
+  const storeData = async (value: string) => {
+    let newList = ['', '', '', '', ''];
+    for (let index = 0; index < 5; index++) {
+      if (index === 0) {
+        newList[0] = value;
+      } else newList[index] = prevGames[index - 1];
+    }
+    await AsyncStorage.setItem('@tic-tac-toe', JSON.stringify(newList));
+  };
+
+  const getData = async () => {
+    const jsonValue = await AsyncStorage.getItem('@tic-tac-toe');
+    return jsonValue != null ? JSON.parse(jsonValue) : null;
+  };
+
+  const getPreviousGameResults = async () => {
+    const storedData = await getData();
+    if (storedData) {
+      setPrevGames(storedData);
+    }
+  };
+  useEffect(() => {
+    getPreviousGameResults();
+  }, []);
+
   const [gameState, setGameState] = useState<GameState>([
     ['', '', ''],
     ['', '', ''],
@@ -41,6 +69,7 @@ const App = () => {
       ['', '', ''],
       ['', '', ''],
     ]);
+    getPreviousGameResults();
   };
 
   const hasGameWon: (state: GameState, symbol: String) => Boolean = (
@@ -97,12 +126,16 @@ const App = () => {
       appState === appStates.player_one_turn ||
       appState === appStates.player_two_turn
     ) {
-      if (hasGameWon(gameState, 'X'))
+      if (hasGameWon(gameState, 'X')) {
         setAppState(appStates.result_player_one_won);
-      else if (hasGameWon(gameState, 'O'))
+        storeData('Player1 Won');
+      } else if (hasGameWon(gameState, 'O')) {
         setAppState(appStates.result_player_two_won);
-      else if (hasGameTied(gameState)) setAppState(appStates.result_game_tied);
-      else
+        storeData('Player2 Won');
+      } else if (hasGameTied(gameState)) {
+        setAppState(appStates.result_game_tied);
+        storeData('Game Tied');
+      } else
         setAppState(
           appState === appStates.player_one_turn
             ? appStates.player_two_turn
@@ -186,6 +219,36 @@ const App = () => {
               </View>
             </TouchableOpacity>
           ) : null}
+          <View
+            style={[
+              styles.statusWrapper,
+              {
+                paddingTop: 25,
+              },
+            ]}>
+            <Text
+              style={[
+                styles.statusText,
+                {
+                  fontWeight: '600',
+                },
+              ]}>
+              Previous Game Results
+            </Text>
+          </View>
+          {prevGames.map(status => (
+            <View style={styles.statusWrapper}>
+              <Text
+                style={[
+                  styles.statusText,
+                  {
+                    fontSize: 15,
+                  },
+                ]}>
+                {status}
+              </Text>
+            </View>
+          ))}
         </View>
       </View>
     </SafeAreaView>
